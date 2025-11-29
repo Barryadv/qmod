@@ -1,0 +1,25 @@
+# Core math / data
+numpy
+pandas
+
+# Charting
+matplotlib
+
+# Market data
+yfinance
+requests
+
+# Config / validation
+pydantic>=2.0
+pydantic-settings>=2.0
+typing_extensions
+
+# DB (if qmod.db uses SQLAlchemy)
+SQLAlchemy>=2.0
+
+# Optional: if you plan to expose FastAPI endpoints from this repo
+fastapi
+uvicorn
+
+# Optional: if you really use them *inside qmod* (not just in old scripts)
+optuna
