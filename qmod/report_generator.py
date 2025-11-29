@@ -87,6 +87,8 @@ def generate_price_chart(
         title = f"{ticker} - optimized on RSI ({rsi_params['length']}, {rsi_params.get('os', 30)}, {rsi_params.get('ob', 70)})"
     elif optimizer_used == "both":
         title = f"{ticker} - optimized on MACD & RSI"
+    elif optimizer_used == "combined":
+        title = f"{ticker} - combined strategy (all 6 params)"
     else:
         title = f"{ticker} - Price (default parameters)"
     
@@ -227,6 +229,13 @@ def _build_optimization_summary(
             f"MACD: fast={macd_params['fast']}, slow={macd_params['slow']}, signal={macd_params['signal']}. "
             f"RSI: length={rsi_params['length']}, oversold={rsi_params.get('os', 30)}, overbought={rsi_params.get('ob', 70)}."
         )
+    elif optimizer_used == "combined":
+        return (
+            f"<strong>Joint optimization (combined strategy)</strong> with {n_trials} trials. "
+            f"All 6 parameters optimized together using a confluence strategy. "
+            f"MACD: fast={macd_params['fast']}, slow={macd_params['slow']}, signal={macd_params['signal']}. "
+            f"RSI: length={rsi_params['length']}, oversold={rsi_params.get('os', 30)}, overbought={rsi_params.get('ob', 70)}."
+        )
     else:
         return "Using current MACD &amp; RSI parameters."
 
@@ -271,6 +280,28 @@ def generate_html_report(
         signal_text = last_signal.signal.upper()
         signal_score = last_signal.score
         signal_color = _signal_color(last_signal.signal)
+    
+    # Combined strategy explanation (only shown for combined optimizer)
+    if optimizer_used == "combined":
+        combined_strategy_section = f'''
+    <div style="margin: 24px auto; max-width: 900px; background: #fff; border-radius: 8px; padding: 20px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+        <h3 style="font-size: 16px; font-weight: 600; color: #1a1a1a; margin-bottom: 12px;">Combined Optimization Strategy</h3>
+        <p style="font-size: 14px; color: #555; margin-bottom: 12px;">
+            When using the <strong>combined</strong> optimizer, all six parameters (MACD: fast={macd_params["fast"]}, slow={macd_params["slow"]}, signal={macd_params["signal"]} + RSI: length={rsi_params["length"]}, oversold={rsi_params.get("os", 30)}, overbought={rsi_params.get("ob", 70)}) are jointly optimized using Optuna.
+        </p>
+        <p style="font-size: 14px; color: #555; margin-bottom: 12px;">
+            The strategy uses a <strong>state-based confluence</strong> approach:
+        </p>
+        <ul style="font-size: 14px; color: #555; margin-left: 24px; margin-bottom: 12px;">
+            <li><strong>BUY Signal:</strong> Generated when entering a state where MACD is bullish (MACD line &gt; signal line) AND RSI is oversold (below threshold)</li>
+            <li><strong>SELL Signal:</strong> Generated when entering a state where MACD is bearish (MACD line &lt; signal line) AND RSI is overbought (above threshold)</li>
+        </ul>
+        <p style="font-size: 14px; color: #555;">
+            This is symmetric—either indicator can "trigger" the signal, as long as both conditions are active when the confluence state is entered. Signals are generated only on state transitions to avoid repeated signals while conditions persist.
+        </p>
+    </div>'''
+    else:
+        combined_strategy_section = ""
     
     # Build HTML
     html = f'''<!DOCTYPE html>
@@ -434,6 +465,7 @@ def generate_html_report(
             </div>
         </div>
     </div>
+    {combined_strategy_section}
 </body>
 </html>'''
     

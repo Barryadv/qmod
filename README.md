@@ -39,8 +39,11 @@ python -m qmod --tkr GM --start 2024-01-01 --end 2024-06-30 --n-trials 10 --opti
 # With RSI optimization
 python -m qmod --tkr MSFT --n-trials 15 --optimizer rsi
 
-# Optimize both MACD and RSI
+# Optimize both MACD and RSI (separately)
 python -m qmod --tkr AAPL --n-trials 10 --optimizer both
+
+# Combined optimization (joint MACD+RSI confluence strategy)
+python -m qmod --tkr GM --n-trials 15 --optimizer combined
 
 # Generate HTML report
 python -m qmod --tkr GM --n-trials 10 --optimizer rsi --report
@@ -93,7 +96,7 @@ curl "http://localhost:8000/analyze?tkr=GM&start=2024-01-01&end=2024-06-30&n_tri
 | `--start` | Start date (YYYY-MM-DD) | 1 year ago |
 | `--end` | End date (YYYY-MM-DD) | Today |
 | `--n-trials` | Optuna optimization trials (0 = use defaults) | 0 |
-| `--optimizer` | Which optimizer: `macd`, `rsi`, or `both` | macd |
+| `--optimizer` | Which optimizer: `macd`, `rsi`, `both`, or `combined` | macd |
 | `--report` | Generate HTML composite report | False |
 | `--serve` | Start FastAPI server | False |
 | `--host` | Server bind address | 127.0.0.1 |
@@ -123,6 +126,20 @@ curl "http://localhost:8000/analyze?tkr=GM&start=2024-01-01&end=2024-06-30&n_tri
 | `db.py` | SQLAlchemy database integration |
 | `backtest.py` | MACD backtesting module |
 | `backtest_rsi.py` | RSI backtesting module |
+| `optuna_imp_combined.py` | Joint MACD+RSI optimization using confluence strategy |
+
+---
+
+## Combined Optimizer Strategy
+
+The `--optimizer combined` mode jointly optimizes all 6 parameters (MACD: fast, slow, signal + RSI: length, os, ob) using a **state-based confluence** strategy:
+
+| Condition | Signal |
+|-----------|--------|
+| MACD bullish (line > signal) AND RSI < oversold | **BUY** (on entering state) |
+| MACD bearish (line < signal) AND RSI > overbought | **SELL** (on entering state) |
+
+Unlike `--optimizer both` which runs two separate optimizations, `combined` finds parameters that work together as a unified strategy. Signals are only generated when **entering** a confluence state (not on every bar the conditions are true).
 
 ---
 

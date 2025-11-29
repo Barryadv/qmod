@@ -103,7 +103,7 @@ def analyze(
     start: Optional[datetime] = Query(None, description="Start date (YYYY-MM-DD). Defaults to 1 year ago."),
     end: Optional[datetime] = Query(None, description="End date (YYYY-MM-DD). Defaults to today."),
     n_trials: int = Query(0, ge=0, le=500, description="Optuna optimization trials. 0 = use defaults."),
-    optimizer: Literal["macd", "rsi", "both"] = Query("macd", description="Which optimizer to run."),
+    optimizer: Literal["macd", "rsi", "both", "combined"] = Query("macd", description="Which optimizer to run."),
 ) -> RunOutputDTO:
     """
     Run the qmod analysis pipeline on a ticker.
@@ -166,7 +166,7 @@ def generate_report(
     start: Optional[datetime] = Query(None, description="Start date (YYYY-MM-DD). Defaults to 1 year ago."),
     end: Optional[datetime] = Query(None, description="End date (YYYY-MM-DD). Defaults to today."),
     n_trials: int = Query(0, ge=0, le=500, description="Optuna optimization trials. 0 = use defaults."),
-    optimizer: Literal["macd", "rsi", "both"] = Query("macd", description="Which optimizer to run."),
+    optimizer: Literal["macd", "rsi", "both", "combined"] = Query("macd", description="Which optimizer to run."),
 ) -> HTMLResponse:
     """
     Run analysis and generate an HTML composite report.
@@ -233,7 +233,7 @@ def generate_report_json(
     start: Optional[datetime] = Query(None, description="Start date (YYYY-MM-DD). Defaults to 1 year ago."),
     end: Optional[datetime] = Query(None, description="End date (YYYY-MM-DD). Defaults to today."),
     n_trials: int = Query(0, ge=0, le=500, description="Optuna optimization trials. 0 = use defaults."),
-    optimizer: Literal["macd", "rsi", "both"] = Query("macd", description="Which optimizer to run."),
+    optimizer: Literal["macd", "rsi", "both", "combined"] = Query("macd", description="Which optimizer to run."),
 ) -> dict:
     """
     Run analysis, generate HTML report, and return the analysis result with file path.

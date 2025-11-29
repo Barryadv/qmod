@@ -21,10 +21,12 @@ from qmod.report_generator import save_html_report
 # Optuna optimizer modules (lazy import to avoid hard dependency)
 _optuna_imp = None
 _optuna_imp_rsi = None
+_optuna_imp_combined = None
 
 try:
     from qmod import optuna_imp as _optuna_imp
     from qmod import optuna_imp_rsi as _optuna_imp_rsi
+    from qmod import optuna_imp_combined as _optuna_imp_combined
 except ImportError:
     pass  # Optimizers not available
 
@@ -39,7 +41,7 @@ np.random.seed(42)
 DEFAULT_MACD = {"fast": 12, "slow": 26, "signal": 9}
 DEFAULT_RSI = {"length": 14, "os": 30, "ob": 70}
 
-OptimizerMode = Literal["macd", "rsi", "both"]
+OptimizerMode = Literal["macd", "rsi", "both", "combined"]
 
 
 # ---------------------------------------------------------------------------
@@ -189,6 +191,8 @@ def run_optimization(
             "optimizer_used": "none",
         }
 
+    backtest_metrics = None  # Only populated for combined mode
+    
     if mode == "macd":
         logger.info("Running MACD optimization (%d trials)...", n_trials)
         macd_params = optimize_macd(close, tkr, n_trials)
@@ -197,35 +201,52 @@ def run_optimization(
         logger.info("Running RSI optimization (%d trials)...", n_trials)
         rsi_params = optimize_rsi(close, tkr, n_trials)
         optimizer_used = "rsi"
-    else:  # both
+    elif mode == "both":
         logger.info("Running MACD + RSI optimization (%d trials each)...", n_trials)
         macd_params = optimize_macd(close, tkr, n_trials)
         rsi_params = optimize_rsi(close, tkr, n_trials)
         optimizer_used = "both"
+    elif mode == "combined":
+        logger.info("Running COMBINED MACD+RSI joint optimization (%d trials)...", n_trials)
+        if _optuna_imp_combined is None:
+            raise ImportError("optuna_imp_combined module not available")
+        result = _optuna_imp_combined.optimize_combined(close, tkr, n_trials)
+        macd_params = result["macd_params"]
+        rsi_params = result["rsi_params"]
+        backtest_metrics = result.get("backtest_metrics")
+        optimizer_used = "combined"
+    else:
+        raise ValueError(f"Unknown optimizer mode: {mode}")
 
     # Save optimized params to artifacts with timestamp
     from datetime import datetime as dt
     timestamp = dt.now().strftime("%Y%m%d_%H%M%S")
     out_dir = artifacts_dir("optimized", _safe_tkr(tkr))
     params_file = out_dir / f"{_safe_tkr(tkr)}_{timestamp}_optimized_params.json"
-    params_file.write_text(
-        json.dumps({
-            "ticker": tkr,
-            "timestamp": timestamp,
-            "optimizer_used": optimizer_used,
-            "n_trials": n_trials,
-            "macd_params": macd_params,
-            "rsi_params": rsi_params,
-        }, indent=2),
-        encoding="utf-8",
-    )
+    
+    save_data = {
+        "ticker": tkr,
+        "timestamp": timestamp,
+        "optimizer_used": optimizer_used,
+        "n_trials": n_trials,
+        "macd_params": macd_params,
+        "rsi_params": rsi_params,
+    }
+    if backtest_metrics:
+        save_data["backtest_metrics"] = backtest_metrics
+    
+    params_file.write_text(json.dumps(save_data, indent=2), encoding="utf-8")
     logger.info("Saved optimized params to %s", params_file)
 
-    return {
+    result = {
         "macd_params": macd_params,
         "rsi_params": rsi_params,
         "optimizer_used": optimizer_used,
     }
+    if backtest_metrics:
+        result["backtest_metrics"] = backtest_metrics
+    
+    return result
 
 
 def _sanitize_config(cfg: AppConfig) -> Dict[str, Any]:

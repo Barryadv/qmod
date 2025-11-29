@@ -79,8 +79,8 @@ def build_arg_parser() -> argparse.ArgumentParser:
         dest="optimizer",
         type=str,
         default="macd",
-        choices=["macd", "rsi", "both"],
-        help="Which optimizer to run: macd (default), rsi, or both",
+        choices=["macd", "rsi", "both", "combined"],
+        help="Which optimizer: macd (default), rsi, both (separate), or combined (joint optimization)",
     )
 
     # Optional toggles
