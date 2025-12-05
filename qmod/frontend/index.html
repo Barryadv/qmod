@@ -410,7 +410,7 @@
       }
     }
 
-    function showSuccess(data) {
+    function showSuccess(data, requestParams) {
       statusBadge.className = 'status-badge success';
       statusBadge.textContent = 'SUCCESS';
       responseOutput.innerHTML = syntaxHighlight(data);
@@ -418,20 +418,8 @@
       // Check for report URL fields
       const reportUrl = data.report_path || data.html_url || data.report_html_url;
       if (reportUrl) {
-        // For local file paths, construct URL to /report endpoint
-        const ticker = document.getElementById('ticker').value.trim();
-        const startDate = document.getElementById('start_date').value;
-        const endDate = document.getElementById('end_date').value;
-        const optimizer = document.getElementById('optimizer').value;
-        const nTrials = document.getElementById('n_trials').value;
-        
-        const params = new URLSearchParams({ tkr: ticker });
-        if (startDate) params.append('start', startDate);
-        if (endDate) params.append('end', endDate);
-        if (optimizer) params.append('optimizer', optimizer);
-        if (nTrials) params.append('n_trials', nTrials);
-        
-        currentReportUrl = `${API_BASE}/report?${params.toString()}`;
+        // Use the same params that were sent with the original request
+        currentReportUrl = `${API_BASE}/report?${requestParams.toString()}`;
         reportLinkContainer.classList.remove('hidden');
       } else {
         reportLinkContainer.classList.add('hidden');
@@ -479,7 +467,7 @@
         const data = await response.json();
 
         if (response.ok) {
-          showSuccess(data);
+          showSuccess(data, params);
         } else {
           showError(data);
         }
@@ -498,8 +486,12 @@
 
     // Set default dates (1 year ago to today)
     const today = new Date();
-    const oneYearAgo = new Date();
-    oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+    const oneYearAgo = new Date(today);
+    oneYearAgo.setFullYear(today.getFullYear() - 1);
+    // Handle leap year edge case: Feb 29 -> Feb 28 (not Mar 1)
+    if (oneYearAgo.getMonth() !== today.getMonth()) {
+      oneYearAgo.setDate(0); // Last day of the correct month
+    }
     
     document.getElementById('end_date').value = today.toISOString().split('T')[0];
     document.getElementById('start_date').value = oneYearAgo.toISOString().split('T')[0];
