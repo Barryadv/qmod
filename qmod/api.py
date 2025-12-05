@@ -11,17 +11,22 @@ Or directly:
 """
 from __future__ import annotations
 
+import glob
+import os
+import re
 import traceback
 from datetime import datetime
 from logging.config import dictConfig
 from pathlib import Path
 from typing import Literal, Optional
 
-from fastapi import FastAPI, Query, HTTPException, status
+import httpx
+from fastapi import FastAPI, Query, HTTPException, status, Body
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.utils import get_openapi
 from fastapi.responses import JSONResponse, HTMLResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel
 
 from qmod.dto import RunOutputDTO, ErrorDTO
 from qmod.pipeline import run_once, run_with_report, run_optimization, DEFAULT_MACD, DEFAULT_RSI
@@ -80,6 +85,330 @@ def serve_frontend():
     if index_path.exists():
         return FileResponse(str(index_path), media_type="text/html")
     return HTMLResponse("<h1>qmod API</h1><p>Visit <a href='/docs'>/docs</a> for API documentation.</p>")
+
+
+# ---- DivArist Section ----
+# Path to the DivArist project (for local development)
+_DIVARIST_DIR = Path(os.environ.get("DIVARIST_PATH", ""))
+if not _DIVARIST_DIR.exists():
+    # Fallback to sibling directory for local development
+    _DIVARIST_DIR = Path(__file__).parent.parent.parent / "DivArist"
+
+# File mapping for DivArist downloads
+# Each entry: (env_var_name, local_subdir, local_pattern, media_type)
+_DIVARIST_FILES = {
+    "dashboard_train": ("DIVARIST_DASHBOARD_TRAIN", "Dashboards", "dashboard_train_*.html", "text/html"),
+    "dashboard_test": ("DIVARIST_DASHBOARD_TEST", "Dashboards", "dashboard_test_*.html", "text/html"),
+    "backtest_chart": ("DIVARIST_BACKTEST_CHART", "ScenarioGrid", "backtest_chart_*.png", "image/png"),
+    "backtest_heatmap": ("DIVARIST_BACKTEST_HEATMAP", "ScenarioGrid", "backtest_heatmap_*.png", "image/png"),
+    "simulation_train": ("DIVARIST_SIMULATION_TRAIN", "SimulationTest", "simulation_train_*.png", "image/png"),
+    "simulation_test": ("DIVARIST_SIMULATION_TEST", "SimulationTest", "simulation_test_*.png", "image/png"),
+}
+
+# README can also be a Dropbox URL
+_DIVARIST_README_URL = os.environ.get("DIVARIST_README_URL", "")
+
+
+def _get_dropbox_url(file_id: str) -> Optional[str]:
+    """Get Dropbox URL for a file from environment variable."""
+    if file_id not in _DIVARIST_FILES:
+        return None
+    env_var = _DIVARIST_FILES[file_id][0]
+    url = os.environ.get(env_var, "")
+    if url:
+        # Convert Dropbox share URL to direct download URL
+        # ?dl=0 -> ?dl=1 for direct download
+        if "dropbox.com" in url and "?dl=0" in url:
+            url = url.replace("?dl=0", "?dl=1")
+        elif "dropbox.com" in url and "?dl=" not in url:
+            url = url + ("&dl=1" if "?" in url else "?dl=1")
+    return url if url else None
+
+
+def _find_latest_file(subdir: str, pattern: str) -> Optional[Path]:
+    """Find the latest file matching a pattern in a DivArist subdirectory."""
+    search_path = _DIVARIST_DIR / subdir / pattern
+    files = glob.glob(str(search_path))
+    if not files:
+        # Try root level fallback (non-timestamped version)
+        root_pattern = pattern.replace("_*", "").replace("*", "")
+        root_file = _DIVARIST_DIR / subdir / root_pattern
+        if root_file.exists():
+            return root_file
+        # Also try just the base name in the subdir
+        base_file = _DIVARIST_DIR / subdir / (root_pattern + ".html" if "html" in pattern else root_pattern + ".png")
+        if base_file.exists():
+            return base_file
+        return None
+    # Return the most recently modified file
+    return Path(max(files, key=os.path.getmtime))
+
+
+def _markdown_to_html(md_text: str) -> str:
+    """Convert markdown to basic HTML (simple implementation)."""
+    html = md_text
+    
+    # Escape HTML special chars first (except for our conversions)
+    # Skip this to allow tables to work
+    
+    # Headers
+    html = re.sub(r'^### (.+)$', r'<h3>\1</h3>', html, flags=re.MULTILINE)
+    html = re.sub(r'^## (.+)$', r'<h2>\1</h2>', html, flags=re.MULTILINE)
+    html = re.sub(r'^# (.+)$', r'<h1>\1</h1>', html, flags=re.MULTILINE)
+    
+    # Bold and italic
+    html = re.sub(r'\*\*(.+?)\*\*', r'<strong>\1</strong>', html)
+    html = re.sub(r'\*(.+?)\*', r'<em>\1</em>', html)
+    
+    # Inline code
+    html = re.sub(r'`([^`]+)`', r'<code>\1</code>', html)
+    
+    # Code blocks
+    html = re.sub(r'```(\w*)\n(.*?)```', r'<pre><code>\2</code></pre>', html, flags=re.DOTALL)
+    
+    # Blockquotes
+    html = re.sub(r'^> (.+)$', r'<blockquote>\1</blockquote>', html, flags=re.MULTILINE)
+    
+    # Horizontal rules
+    html = re.sub(r'^---+$', r'<hr>', html, flags=re.MULTILINE)
+    
+    # Tables (basic support)
+    lines = html.split('\n')
+    in_table = False
+    table_lines = []
+    result_lines = []
+    
+    for line in lines:
+        if '|' in line and line.strip().startswith('|'):
+            if not in_table:
+                in_table = True
+                table_lines = []
+            table_lines.append(line)
+        else:
+            if in_table:
+                # Process accumulated table
+                result_lines.append(_convert_table(table_lines))
+                in_table = False
+                table_lines = []
+            result_lines.append(line)
+    
+    if in_table:
+        result_lines.append(_convert_table(table_lines))
+    
+    html = '\n'.join(result_lines)
+    
+    # Lists
+    html = re.sub(r'^- (.+)$', r'<li>\1</li>', html, flags=re.MULTILINE)
+    html = re.sub(r'(<li>.*</li>\n?)+', r'<ul>\g<0></ul>', html)
+    
+    # Paragraphs (lines that aren't already tagged)
+    lines = html.split('\n')
+    result = []
+    for line in lines:
+        stripped = line.strip()
+        if stripped and not stripped.startswith('<') and not stripped.startswith('|'):
+            result.append(f'<p>{stripped}</p>')
+        else:
+            result.append(line)
+    
+    return '\n'.join(result)
+
+
+def _convert_table(lines: list) -> str:
+    """Convert markdown table lines to HTML table."""
+    if len(lines) < 2:
+        return '\n'.join(lines)
+    
+    html = ['<table>']
+    for i, line in enumerate(lines):
+        if '---' in line:
+            continue  # Skip separator row
+        cells = [c.strip() for c in line.split('|')[1:-1]]
+        tag = 'th' if i == 0 else 'td'
+        row = '<tr>' + ''.join(f'<{tag}>{c}</{tag}>' for c in cells) + '</tr>'
+        html.append(row)
+    html.append('</table>')
+    return '\n'.join(html)
+
+
+class ChatRequest(BaseModel):
+    question: str
+
+
+@app.get("/divarist", include_in_schema=False)
+def serve_divarist():
+    """Serve the DivArist landing page."""
+    divarist_path = _FRONTEND_DIR / "divarist.html"
+    if divarist_path.exists():
+        return FileResponse(str(divarist_path), media_type="text/html")
+    return HTMLResponse("<h1>DivArist</h1><p>Page not found.</p>")
+
+
+@app.get("/api/divarist/readme", tags=["DivArist"])
+async def get_divarist_readme():
+    """Get the DivArist README as HTML."""
+    md_content = None
+    
+    # Try Dropbox URL first
+    if _DIVARIST_README_URL:
+        try:
+            url = _DIVARIST_README_URL
+            if "dropbox.com" in url and "?dl=0" in url:
+                url = url.replace("?dl=0", "?dl=1")
+            elif "dropbox.com" in url and "?dl=" not in url:
+                url = url + ("&dl=1" if "?" in url else "?dl=1")
+            
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                response = await client.get(url, follow_redirects=True)
+                if response.status_code == 200:
+                    md_content = response.text
+        except Exception:
+            pass  # Fall through to local file
+    
+    # Fallback to local file
+    if not md_content:
+        readme_path = _DIVARIST_DIR / "README.md"
+        if readme_path.exists():
+            md_content = readme_path.read_text(encoding="utf-8")
+    
+    if not md_content:
+        raise HTTPException(status_code=404, detail="README not found")
+    
+    html_content = _markdown_to_html(md_content)
+    return {"html": html_content, "markdown": md_content}
+
+
+@app.get("/api/divarist/file/{file_id}", tags=["DivArist"])
+async def get_divarist_file(file_id: str):
+    """Download a DivArist output file. Supports Dropbox URLs or local files."""
+    if file_id not in _DIVARIST_FILES:
+        raise HTTPException(status_code=404, detail=f"Unknown file: {file_id}")
+    
+    env_var, subdir, pattern, media_type = _DIVARIST_FILES[file_id]
+    
+    # Check for Dropbox URL first
+    dropbox_url = _get_dropbox_url(file_id)
+    if dropbox_url:
+        # Redirect to Dropbox for direct download
+        from fastapi.responses import RedirectResponse
+        return RedirectResponse(url=dropbox_url, status_code=302)
+    
+    # Fallback to local file
+    file_path = _find_latest_file(subdir, pattern)
+    
+    if not file_path or not file_path.exists():
+        raise HTTPException(status_code=404, detail=f"File not found: {file_id}")
+    
+    return FileResponse(
+        str(file_path),
+        media_type=media_type,
+        filename=file_path.name
+    )
+
+
+@app.post("/api/divarist/chat", tags=["DivArist"])
+async def divarist_chat(request: ChatRequest):
+    """Chat about the DivArist strategy using LLM (Anthropic or OpenAI)."""
+    question = request.question.strip()
+    if not question:
+        raise HTTPException(status_code=400, detail="Question cannot be empty")
+    
+    # Load README for context - try Dropbox first, then local
+    readme_content = None
+    
+    if _DIVARIST_README_URL:
+        try:
+            url = _DIVARIST_README_URL
+            if "dropbox.com" in url and "?dl=0" in url:
+                url = url.replace("?dl=0", "?dl=1")
+            elif "dropbox.com" in url and "?dl=" not in url:
+                url = url + ("&dl=1" if "?" in url else "?dl=1")
+            
+            async with httpx.AsyncClient(timeout=30.0) as client:
+                response = await client.get(url, follow_redirects=True)
+                if response.status_code == 200:
+                    readme_content = response.text
+        except Exception:
+            pass
+    
+    if not readme_content:
+        readme_path = _DIVARIST_DIR / "README.md"
+        if readme_path.exists():
+            readme_content = readme_path.read_text(encoding="utf-8")
+        else:
+            readme_content = "Documentation not available."
+    
+    # Build system prompt
+    system_prompt = f"""You are an expert assistant for the DivArist project - an Emerging Market Dividend Aristocrats investment strategy.
+
+You have access to the full project documentation below. Answer questions accurately based on this documentation.
+Be concise but thorough. If the answer isn't in the documentation, say so.
+
+=== PROJECT DOCUMENTATION ===
+{readme_content[:15000]}
+=== END DOCUMENTATION ===
+
+Answer the user's question based on this documentation."""
+
+    # Try Anthropic first
+    anthropic_key = os.environ.get("ANTHROPIC_API_KEY")
+    openai_key = os.environ.get("OPENAI_API_KEY")
+    
+    if anthropic_key:
+        try:
+            async with httpx.AsyncClient(timeout=60.0) as client:
+                response = await client.post(
+                    "https://api.anthropic.com/v1/messages",
+                    headers={
+                        "x-api-key": anthropic_key,
+                        "anthropic-version": "2023-06-01",
+                        "content-type": "application/json",
+                    },
+                    json={
+                        "model": "claude-sonnet-4-20250514",
+                        "max_tokens": 1024,
+                        "system": system_prompt,
+                        "messages": [{"role": "user", "content": question}],
+                    },
+                )
+                if response.status_code == 200:
+                    data = response.json()
+                    answer = data["content"][0]["text"]
+                    return {"answer": answer, "provider": "anthropic"}
+        except Exception as e:
+            # Fall through to OpenAI
+            pass
+    
+    # Fallback to OpenAI
+    if openai_key:
+        try:
+            async with httpx.AsyncClient(timeout=60.0) as client:
+                response = await client.post(
+                    "https://api.openai.com/v1/chat/completions",
+                    headers={
+                        "Authorization": f"Bearer {openai_key}",
+                        "Content-Type": "application/json",
+                    },
+                    json={
+                        "model": "gpt-4o",
+                        "max_tokens": 1024,
+                        "messages": [
+                            {"role": "system", "content": system_prompt},
+                            {"role": "user", "content": question},
+                        ],
+                    },
+                )
+                if response.status_code == 200:
+                    data = response.json()
+                    answer = data["choices"][0]["message"]["content"]
+                    return {"answer": answer, "provider": "openai"}
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"LLM error: {str(e)}")
+    
+    raise HTTPException(
+        status_code=503,
+        detail="No API keys configured. Set ANTHROPIC_API_KEY or OPENAI_API_KEY environment variable."
+    )
 
 
 # ---- Helper Functions ----

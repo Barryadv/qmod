@@ -20,6 +20,7 @@ SQLAlchemy>=2.0
 # Optional: if you plan to expose FastAPI endpoints from this repo
 fastapi
 uvicorn
+httpx
 
 # Optional: if you really use them *inside qmod* (not just in old scripts)
 optuna
