@@ -349,13 +349,18 @@ async def divarist_chat(request: ChatRequest):
     system_prompt = f"""You are an expert assistant for the DivArist project - an Emerging Market Dividend Aristocrats investment strategy.
 
 You have access to the full project documentation below. Answer questions accurately based on this documentation.
-Be concise but thorough. If the answer isn't in the documentation, say so.
+
+FORMATTING RULES (STRICT):
+- Keep responses under 500 characters
+- Use 3-5 bullet points maximum
+- Each bullet should be 1-2 sentences
+- No headers, no markdown formatting except bullets
+- Start directly with bullets, no intro text
+- If the answer isn't in the documentation, say so briefly
 
 === PROJECT DOCUMENTATION ===
 {readme_content[:15000]}
-=== END DOCUMENTATION ===
-
-Answer the user's question based on this documentation."""
+=== END DOCUMENTATION ==="""
 
     # Try Anthropic first
     anthropic_key = os.environ.get("ANTHROPIC_API_KEY")
@@ -373,7 +378,7 @@ Answer the user's question based on this documentation."""
                     },
                     json={
                         "model": "claude-sonnet-4-20250514",
-                        "max_tokens": 1024,
+                        "max_tokens": 400,
                         "system": system_prompt,
                         "messages": [{"role": "user", "content": question}],
                     },
@@ -398,7 +403,7 @@ Answer the user's question based on this documentation."""
                     },
                     json={
                         "model": "gpt-4o",
-                        "max_tokens": 1024,
+                        "max_tokens": 400,
                         "messages": [
                             {"role": "system", "content": system_prompt},
                             {"role": "user", "content": question},
