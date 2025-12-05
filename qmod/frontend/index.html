@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>qmod — Quantitative Analysis</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-primary: #0a0a0f;
+      --bg-secondary: #12121a;
+      --bg-tertiary: #1a1a25;
+      --accent-cyan: #00d4ff;
+      --accent-magenta: #ff006e;
+      --accent-yellow: #ffd000;
+      --text-primary: #e8e8ed;
+      --text-secondary: #9090a0;
+      --border-color: #2a2a3a;
+      --success: #00ff88;
+      --error: #ff4444;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Outfit', sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      min-height: 100vh;
+      background-image: 
+        radial-gradient(ellipse at 20% 20%, rgba(0, 212, 255, 0.08) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 80%, rgba(255, 0, 110, 0.06) 0%, transparent 50%),
+        linear-gradient(180deg, var(--bg-primary) 0%, #0d0d14 100%);
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 3rem 2rem;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, var(--accent-cyan), var(--accent-magenta));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 0.5rem;
+    }
+
+    .subtitle {
+      color: var(--text-secondary);
+      font-size: 1rem;
+      font-weight: 300;
+    }
+
+    .card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 16px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.3);
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.5rem;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .form-group.full-width {
+      grid-column: 1 / -1;
+    }
+
+    label {
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    input, select {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.95rem;
+      padding: 0.875rem 1rem;
+      background: var(--bg-tertiary);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      color: var(--text-primary);
+      transition: all 0.2s ease;
+    }
+
+    input:focus, select:focus {
+      outline: none;
+      border-color: var(--accent-cyan);
+      box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.15);
+    }
+
+    input::placeholder {
+      color: var(--text-secondary);
+      opacity: 0.6;
+    }
+
+    select {
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%239090a0' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 1rem center;
+      padding-right: 2.5rem;
+    }
+
+    button {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1rem;
+      font-weight: 600;
+      padding: 1rem 2rem;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--accent-cyan), #00a8cc);
+      color: var(--bg-primary);
+      width: 100%;
+      margin-top: 1rem;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(0, 212, 255, 0.3);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .btn-report {
+      background: linear-gradient(135deg, var(--accent-magenta), #cc0058);
+      color: white;
+      margin-top: 1rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .btn-report:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(255, 0, 110, 0.3);
+    }
+
+    .response-section {
+      margin-top: 1rem;
+    }
+
+    .response-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+    }
+
+    .response-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .status-badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      font-weight: 500;
+    }
+
+    .status-badge.success {
+      background: rgba(0, 255, 136, 0.15);
+      color: var(--success);
+      border: 1px solid rgba(0, 255, 136, 0.3);
+    }
+
+    .status-badge.error {
+      background: rgba(255, 68, 68, 0.15);
+      color: var(--error);
+      border: 1px solid rgba(255, 68, 68, 0.3);
+    }
+
+    .status-badge.loading {
+      background: rgba(255, 208, 0, 0.15);
+      color: var(--accent-yellow);
+      border: 1px solid rgba(255, 208, 0, 0.3);
+    }
+
+    pre {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      line-height: 1.6;
+      background: var(--bg-primary);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 1.5rem;
+      overflow-x: auto;
+      max-height: 500px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .loading-spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid transparent;
+      border-top-color: var(--accent-yellow);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-right: 0.5rem;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    @media (max-width: 600px) {
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      h1 {
+        font-size: 1.8rem;
+      }
+      
+      .container {
+        padding: 1.5rem 1rem;
+      }
+    }
+
+    /* JSON syntax highlighting */
+    .json-key { color: var(--accent-cyan); }
+    .json-string { color: var(--success); }
+    .json-number { color: var(--accent-yellow); }
+    .json-boolean { color: var(--accent-magenta); }
+    .json-null { color: var(--text-secondary); }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>qmod</h1>
+      <p class="subtitle">Quantitative Analysis Pipeline — MACD/RSI Optimization</p>
+    </header>
+
+    <div class="card">
+      <form id="analysisForm">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="ticker">Ticker Symbol</label>
+            <input 
+              type="text" 
+              id="ticker" 
+              name="ticker" 
+              placeholder="AAPL, BTC-USD, GM..."
+              required
+              autocomplete="off"
+            >
+          </div>
+
+          <div class="form-group">
+            <label for="optimizer">Strategy / Optimizer</label>
+            <select id="optimizer" name="optimizer">
+              <option value="macd">MACD</option>
+              <option value="rsi">RSI</option>
+              <option value="both">Both (Sequential)</option>
+              <option value="combined">Combined</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="start_date">Start Date</label>
+            <input 
+              type="date" 
+              id="start_date" 
+              name="start_date"
+            >
+          </div>
+
+          <div class="form-group">
+            <label for="end_date">End Date</label>
+            <input 
+              type="date" 
+              id="end_date" 
+              name="end_date"
+            >
+          </div>
+
+          <div class="form-group">
+            <label for="n_trials">Optimization Trials (0 = defaults)</label>
+            <input 
+              type="number" 
+              id="n_trials" 
+              name="n_trials" 
+              value="0"
+              min="0"
+              max="500"
+            >
+          </div>
+        </div>
+
+        <button type="submit" class="btn-primary" id="submitBtn">
+          Run Analysis
+        </button>
+      </form>
+    </div>
+
+    <div class="card hidden" id="responseCard">
+      <div class="response-section">
+        <div class="response-header">
+          <span class="response-title">Response</span>
+          <span class="status-badge" id="statusBadge">—</span>
+        </div>
+        <pre id="responseOutput"></pre>
+        <div id="reportLinkContainer" class="hidden">
+          <button class="btn-report" id="openReportBtn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+              <polyline points="15 3 21 3 21 9"/>
+              <line x1="10" y1="14" x2="21" y2="3"/>
+            </svg>
+            Open HTML Report
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = window.location.origin;
+    
+    const form = document.getElementById('analysisForm');
+    const submitBtn = document.getElementById('submitBtn');
+    const responseCard = document.getElementById('responseCard');
+    const responseOutput = document.getElementById('responseOutput');
+    const statusBadge = document.getElementById('statusBadge');
+    const reportLinkContainer = document.getElementById('reportLinkContainer');
+    const openReportBtn = document.getElementById('openReportBtn');
+
+    let currentReportUrl = null;
+
+    function syntaxHighlight(json) {
+      if (typeof json !== 'string') {
+        json = JSON.stringify(json, null, 2);
+      }
+      return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+        let cls = 'json-number';
+        if (/^"/.test(match)) {
+          if (/:$/.test(match)) {
+            cls = 'json-key';
+          } else {
+            cls = 'json-string';
+          }
+        } else if (/true|false/.test(match)) {
+          cls = 'json-boolean';
+        } else if (/null/.test(match)) {
+          cls = 'json-null';
+        }
+        return '<span class="' + cls + '">' + match + '</span>';
+      });
+    }
+
+    function setLoading(loading) {
+      submitBtn.disabled = loading;
+      if (loading) {
+        submitBtn.innerHTML = '<span class="loading-spinner"></span>Running Analysis...';
+        statusBadge.className = 'status-badge loading';
+        statusBadge.textContent = 'LOADING';
+        responseCard.classList.remove('hidden');
+        responseOutput.textContent = 'Fetching data and running analysis...';
+        reportLinkContainer.classList.add('hidden');
+      } else {
+        submitBtn.innerHTML = 'Run Analysis';
+      }
+    }
+
+    function showSuccess(data) {
+      statusBadge.className = 'status-badge success';
+      statusBadge.textContent = 'SUCCESS';
+      responseOutput.innerHTML = syntaxHighlight(data);
+      
+      // Check for report URL fields
+      const reportUrl = data.report_path || data.html_url || data.report_html_url;
+      if (reportUrl) {
+        // For local file paths, construct URL to /report endpoint
+        const ticker = document.getElementById('ticker').value.trim();
+        const startDate = document.getElementById('start_date').value;
+        const endDate = document.getElementById('end_date').value;
+        const optimizer = document.getElementById('optimizer').value;
+        const nTrials = document.getElementById('n_trials').value;
+        
+        const params = new URLSearchParams({ tkr: ticker });
+        if (startDate) params.append('start', startDate);
+        if (endDate) params.append('end', endDate);
+        if (optimizer) params.append('optimizer', optimizer);
+        if (nTrials) params.append('n_trials', nTrials);
+        
+        currentReportUrl = `${API_BASE}/report?${params.toString()}`;
+        reportLinkContainer.classList.remove('hidden');
+      } else {
+        reportLinkContainer.classList.add('hidden');
+      }
+    }
+
+    function showError(error) {
+      statusBadge.className = 'status-badge error';
+      statusBadge.textContent = 'ERROR';
+      responseOutput.innerHTML = syntaxHighlight(error);
+      reportLinkContainer.classList.add('hidden');
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const ticker = document.getElementById('ticker').value.trim();
+      if (!ticker) {
+        alert('Please enter a ticker symbol');
+        return;
+      }
+
+      const startDate = document.getElementById('start_date').value;
+      const endDate = document.getElementById('end_date').value;
+      const optimizer = document.getElementById('optimizer').value;
+      const nTrials = document.getElementById('n_trials').value;
+
+      // Build query params
+      const params = new URLSearchParams({ tkr: ticker });
+      if (startDate) params.append('start', startDate);
+      if (endDate) params.append('end', endDate);
+      if (optimizer) params.append('optimizer', optimizer);
+      if (nTrials) params.append('n_trials', nTrials);
+
+      setLoading(true);
+
+      try {
+        const response = await fetch(`${API_BASE}/report/json?${params.toString()}`, {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json',
+          },
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          showSuccess(data);
+        } else {
+          showError(data);
+        }
+      } catch (err) {
+        showError({ error: 'Network error', message: err.message });
+      } finally {
+        setLoading(false);
+      }
+    });
+
+    openReportBtn.addEventListener('click', () => {
+      if (currentReportUrl) {
+        window.open(currentReportUrl, '_blank');
+      }
+    });
+
+    // Set default dates (1 year ago to today)
+    const today = new Date();
+    const oneYearAgo = new Date();
+    oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+    
+    document.getElementById('end_date').value = today.toISOString().split('T')[0];
+    document.getElementById('start_date').value = oneYearAgo.toISOString().split('T')[0];
+  </script>
+</body>
+</html>
+

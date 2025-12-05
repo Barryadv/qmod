@@ -20,7 +20,8 @@ from typing import Literal, Optional
 from fastapi import FastAPI, Query, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.utils import get_openapi
-from fastapi.responses import JSONResponse, HTMLResponse
+from fastapi.responses import JSONResponse, HTMLResponse, FileResponse
+from fastapi.staticfiles import StaticFiles
 
 from qmod.dto import RunOutputDTO, ErrorDTO
 from qmod.pipeline import run_once, run_with_report, run_optimization, DEFAULT_MACD, DEFAULT_RSI
@@ -62,6 +63,23 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# ---- Static Files & Frontend ----
+# Determine the path to the frontend directory
+_FRONTEND_DIR = Path(__file__).parent / "frontend"
+
+# Serve static files from frontend directory (if it exists)
+if _FRONTEND_DIR.exists():
+    app.mount("/static", StaticFiles(directory=str(_FRONTEND_DIR)), name="static")
+
+
+@app.get("/", include_in_schema=False)
+def serve_frontend():
+    """Serve the frontend index.html at root path."""
+    index_path = _FRONTEND_DIR / "index.html"
+    if index_path.exists():
+        return FileResponse(str(index_path), media_type="text/html")
+    return HTMLResponse("<h1>qmod API</h1><p>Visit <a href='/docs'>/docs</a> for API documentation.</p>")
 
 
 # ---- Helper Functions ----
