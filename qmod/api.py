@@ -103,6 +103,7 @@ _DIVARIST_FILES = {
     "backtest_heatmap": ("DIVARIST_BACKTEST_HEATMAP", "ScenarioGrid", "backtest_heatmap_*.png", "image/png"),
     "simulation_train": ("DIVARIST_SIMULATION_TRAIN", "SimulationTest", "simulation_train_*.png", "image/png"),
     "simulation_test": ("DIVARIST_SIMULATION_TEST", "SimulationTest", "simulation_test_*.png", "image/png"),
+    "readme": ("DIVARIST_README_URL", "", "README.md", "text/markdown"),
 }
 
 # README can also be a Dropbox URL
@@ -294,7 +295,13 @@ async def get_divarist_file(file_id: str):
         return RedirectResponse(url=dropbox_url, status_code=302)
     
     # Fallback to local file
-    file_path = _find_latest_file(subdir, pattern)
+    if subdir:
+        file_path = _find_latest_file(subdir, pattern)
+    else:
+        # Root level file (e.g., README.md)
+        file_path = _DIVARIST_DIR / pattern
+        if not file_path.exists():
+            file_path = None
     
     if not file_path or not file_path.exists():
         raise HTTPException(status_code=404, detail=f"File not found: {file_id}")
