@@ -1,25 +1,44 @@
-# qmod — Quantitative Analysis Pipeline
+# qmod — Quantitative Analysis & Reporting Engine
 
-A Python-based quantitative analysis toolkit for stock market technical indicators with **Optuna hyperparameter optimization**, **FastAPI server**, and **HTML report generation**.
+qmod is a Python-based quantitative analysis toolkit for MACD/RSI optimization, signal generation, composite charting, and HTML/JSON reporting.
 
-## Features
-
-- 📊 **Technical Indicators**: MACD, RSI, Bollinger Bands, SMA/EMA
-- 🔧 **Hyperparameter Optimization**: Optuna-powered optimization for MACD and RSI parameters
-- 🌐 **FastAPI Server**: REST API for programmatic access
-- 📄 **HTML Reports**: Two-column composite reports with interactive charts
-- 💾 **Timestamped Artifacts**: All outputs are timestamped to preserve history
+This project is deployed on **Render** and can be used fully in the browser without installing Python.
 
 ---
 
-## Installation
+## 🚀 Live Deployment
+
+### **Production UI**
+https://quant.stocks-x.ai/
+
+### **Production API**
+https://qmod-1.onrender.com/
+
+### **Interactive API Docs (Swagger)**
+- https://quant.stocks-x.ai/docs
+- https://qmod-1.onrender.com/docs
+
+The browser UI at `/` provides a lightweight interface for generating composite reports using the `/report/json` endpoint.
+
+---
+
+## Features
+
+- 🌐 **FastAPI Backend** — Full REST API with Swagger documentation
+- 💻 **Browser-Based UI** — Web interface served at `/` for generating reports
+- 🐍 **Python Library** — Modular CLI and programmatic use
+- 📊 **Technical Indicators** — MACD, RSI, Bollinger Bands, SMA/EMA
+- 🔧 **Optuna Optimization** — Hyperparameter tuning for MACD and RSI parameters
+- 📄 **HTML/JSON Reports** — Two-column composite reports with embedded charts
+- 💾 **Timestamped Artifacts** — All outputs are timestamped to preserve history
+
+---
+
+## 📦 Installation (Local Development)
 
 ```bash
-# Clone the repository
 git clone https://github.com/Barryadv/qmod.git
 cd qmod
-
-# Install dependencies
 pip install -r requirements.txt
 ```
 
@@ -63,6 +82,7 @@ python -m qmod --serve --host 0.0.0.0 --port 8080
 ```
 
 Once running, access:
+- **Web UI**: http://localhost:8000/
 - **Interactive API Docs**: http://localhost:8000/docs
 - **Health Check**: http://localhost:8000/healthz
 - **Analyze Endpoint**: http://localhost:8000/analyze?tkr=AAPL&n_trials=5
@@ -73,6 +93,7 @@ Once running, access:
 
 | Endpoint | Method | Description |
 |----------|--------|-------------|
+| `/` | GET | Web UI for generating reports |
 | `/analyze` | GET | Run analysis on a ticker, return JSON |
 | `/report` | GET | Generate and return HTML report |
 | `/report/json` | GET | Generate report, return JSON with file path |
@@ -202,4 +223,3 @@ MIT License
 ## Author
 
 Barry Ehrlich — [github.com/Barryadv](https://github.com/Barryadv)
-
