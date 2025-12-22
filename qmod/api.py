@@ -698,10 +698,12 @@ async def get_divarist_stats():
     # Try to get stats from environment variables or return defaults
     # These can be updated when the report is regenerated
     stats = {
-        "dividend_yield": os.environ.get("DIVARIST_DIVIDEND_YIELD", "8.8"),  # Default fallback
+        "dividend_yield": os.environ.get("DIVARIST_DIVIDEND_YIELD", "6.1"),  # Default fallback - updated from report
         "num_stocks": os.environ.get("DIVARIST_NUM_STOCKS", "124"),
-        "ew_return": os.environ.get("DIVARIST_EW_RETURN", "+343%"),
-        "sharpe_ratio": os.environ.get("DIVARIST_SHARPE", "0.97"),
+        "ew_ann_return": os.environ.get("DIVARIST_EW_ANN_RETURN", "20.4"),  # Annualized return 2017-2024
+        "eem_ann_return": os.environ.get("DIVARIST_EEM_ANN_RETURN", "7.1"),  # EEM annualized return 2017-2024
+        "ew_sharpe": os.environ.get("DIVARIST_EW_SHARPE", "0.97"),  # EW Sharpe ratio
+        "eem_sharpe": os.environ.get("DIVARIST_EEM_SHARPE", "0.11"),  # EEM Sharpe ratio
     }
     return JSONResponse(stats)
 

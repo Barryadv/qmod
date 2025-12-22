@@ -511,11 +511,15 @@
         <div class="stat-label">Dividend Aristocrats</div>
       </div>
       <div class="stat-box">
-        <div class="stat-value green">+343%</div>
-        <div class="stat-label">EW Return (2017-24)</div>
+        <div class="stat-value green" id="ewAnnReturn" style="font-size: 1.2em; line-height: 1.3;">
+          <span>20.4%</span> vs <span style="font-size: 0.8em; opacity: 0.8;">7.1%</span>
+        </div>
+        <div class="stat-label">Ann. Return vs EEM</div>
       </div>
       <div class="stat-box">
-        <div class="stat-value">0.97</div>
+        <div class="stat-value green" id="sharpeRatio" style="font-size: 1.2em; line-height: 1.3;">
+          <span>0.97</span> vs <span style="font-size: 0.8em; opacity: 0.8;">0.11</span>
+        </div>
         <div class="stat-label">Sharpe Ratio</div>
       </div>
     </div>
@@ -645,6 +649,8 @@
     const chatSend = document.getElementById('chatSend');
     const readmeContent = document.getElementById('readmeContent');
     const divYieldElement = document.getElementById('divYield');
+    const ewAnnReturnElement = document.getElementById('ewAnnReturn');
+    const sharpeRatioElement = document.getElementById('sharpeRatio');
 
     // Load portfolio stats
     async function loadStats() {
@@ -654,6 +660,24 @@
           const data = await res.json();
           if (divYieldElement) {
             divYieldElement.textContent = data.dividend_yield + '%';
+          }
+          if (ewAnnReturnElement) {
+            const ewReturn = parseFloat(data.ew_ann_return);
+            const eemReturn = parseFloat(data.eem_ann_return);
+            if (!isNaN(ewReturn) && !isNaN(eemReturn)) {
+              ewAnnReturnElement.innerHTML = `<span>${ewReturn.toFixed(1)}%</span> vs <span style="font-size: 0.8em; opacity: 0.8;">${eemReturn.toFixed(1)}%</span>`;
+            } else {
+              console.error('Invalid return data:', data.ew_ann_return, data.eem_ann_return);
+            }
+          }
+          if (sharpeRatioElement) {
+            const ewSharpe = parseFloat(data.ew_sharpe);
+            const eemSharpe = parseFloat(data.eem_sharpe);
+            if (!isNaN(ewSharpe) && !isNaN(eemSharpe)) {
+              sharpeRatioElement.innerHTML = `<span>${ewSharpe.toFixed(2)}</span> vs <span style="font-size: 0.8em; opacity: 0.8;">${eemSharpe.toFixed(2)}</span>`;
+            } else {
+              console.error('Invalid Sharpe data:', data.ew_sharpe, data.eem_sharpe);
+            }
           }
         }
       } catch (err) {
