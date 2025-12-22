@@ -97,6 +97,7 @@ if not _DIVARIST_DIR.exists():
 # File mapping for DivArist downloads
 # Each entry: (env_var_name, local_subdir, local_pattern, media_type)
 _DIVARIST_FILES = {
+    "ew_portfolio_report": ("DIVARIST_EW_PORTFOLIO_REPORT", "", "EW_Portfolio_Report_*.html", "text/html"),
     "dashboard_train": ("DIVARIST_DASHBOARD_TRAIN", "Dashboards", "dashboard_train_*.html", "text/html"),
     "dashboard_test": ("DIVARIST_DASHBOARD_TEST", "Dashboards", "dashboard_test_*.html", "text/html"),
     "backtest_chart": ("DIVARIST_BACKTEST_CHART", "ScenarioGrid", "backtest_chart_*.png", "image/png"),
@@ -128,16 +129,27 @@ def _get_dropbox_url(file_id: str) -> Optional[str]:
 
 def _find_latest_file(subdir: str, pattern: str) -> Optional[Path]:
     """Find the latest file matching a pattern in a DivArist subdirectory."""
-    search_path = _DIVARIST_DIR / subdir / pattern
+    if subdir:
+        search_path = _DIVARIST_DIR / subdir / pattern
+    else:
+        # Root level file
+        search_path = _DIVARIST_DIR / pattern
+    
     files = glob.glob(str(search_path))
     if not files:
-        # Try root level fallback (non-timestamped version)
+        # Try non-timestamped version
         root_pattern = pattern.replace("_*", "").replace("*", "")
-        root_file = _DIVARIST_DIR / subdir / root_pattern
+        if subdir:
+            root_file = _DIVARIST_DIR / subdir / root_pattern
+        else:
+            root_file = _DIVARIST_DIR / root_pattern
         if root_file.exists():
             return root_file
-        # Also try just the base name in the subdir
-        base_file = _DIVARIST_DIR / subdir / (root_pattern + ".html" if "html" in pattern else root_pattern + ".png")
+        # Also try just the base name
+        if subdir:
+            base_file = _DIVARIST_DIR / subdir / (root_pattern + ".html" if "html" in pattern else root_pattern + ".png")
+        else:
+            base_file = _DIVARIST_DIR / (root_pattern + ".html" if "html" in pattern else root_pattern + ".png")
         if base_file.exists():
             return base_file
         return None
@@ -298,10 +310,15 @@ async def get_divarist_file(file_id: str):
     if subdir:
         file_path = _find_latest_file(subdir, pattern)
     else:
-        # Root level file (e.g., README.md)
-        file_path = _DIVARIST_DIR / pattern
-        if not file_path.exists():
-            file_path = None
+        # Root level file - handle both exact matches and glob patterns
+        if "*" in pattern:
+            # Use glob pattern matching for timestamped files
+            file_path = _find_latest_file("", pattern)
+        else:
+            # Exact file match (e.g., README.md)
+            file_path = _DIVARIST_DIR / pattern
+            if not file_path.exists():
+                file_path = None
     
     if not file_path or not file_path.exists():
         raise HTTPException(status_code=404, detail=f"File not found: {file_id}")
