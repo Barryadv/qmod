@@ -6,21 +6,31 @@
   <title>DivArist — EM Dividend Aristocrats Strategy</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg-primary: #0b1222;
-      --bg-secondary: #111a2e;
-      --bg-tertiary: #162033;
-      --accent-gold: #d4a853;
-      --accent-emerald: #10b981;
-      --accent-blue: #3b82f6;
-      --accent-red: #ef4444;
-      --text-primary: #e8ecf4;
-      --text-secondary: #8b9dc3;
-      --border-color: #1e3a5f;
-      --success: #10b981;
-      --card-glow: rgba(212, 168, 83, 0.08);
+      /* Corporate Colors - Main */
+      --white: #FFFFFF;
+      --gold: #D4AF37;
+      --black: #000000;
+      /* Corporate Colors - Additional */
+      --pale-blue: #E6F2FF;
+      --burgundy: #800020;
+      --deep-blue: #003366;
+      
+      /* Theme Variables */
+      --bg-primary: var(--white);
+      --bg-secondary: var(--pale-blue);
+      --bg-tertiary: var(--white);
+      --accent-gold: var(--gold);
+      --accent-emerald: var(--deep-blue);
+      --accent-blue: var(--deep-blue);
+      --accent-red: var(--burgundy);
+      --text-primary: var(--black);
+      --text-secondary: #333333;
+      --border-color: #CCCCCC;
+      --success: var(--deep-blue);
+      --card-glow: rgba(212, 175, 55, 0.15);
     }
 
     * {
@@ -30,14 +40,12 @@
     }
 
     body {
-      font-family: 'Outfit', sans-serif;
+      font-family: 'Inter', 'Tahoma', sans-serif;
+      font-weight: 400;
       background: var(--bg-primary);
       color: var(--text-primary);
       min-height: 100vh;
       line-height: 1.6;
-      background-image: 
-        radial-gradient(ellipse at 10% 10%, rgba(212, 168, 83, 0.06) 0%, transparent 50%),
-        radial-gradient(ellipse at 90% 90%, rgba(16, 185, 129, 0.04) 0%, transparent 50%);
     }
 
     .container {
@@ -58,11 +66,8 @@
 
     .nav-brand {
       font-size: 1.5rem;
-      font-weight: 700;
-      background: linear-gradient(135deg, var(--accent-gold), var(--accent-emerald));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
+      font-weight: 600;
+      color: var(--gold);
     }
 
     .nav-links {
@@ -73,12 +78,13 @@
     .nav-links a {
       color: var(--text-secondary);
       text-decoration: none;
-      font-weight: 500;
+      font-weight: 400;
       transition: color 0.2s;
     }
 
     .nav-links a:hover {
-      color: var(--accent-gold);
+      color: var(--gold);
+      font-weight: 600;
     }
 
     /* Hero */
@@ -89,12 +95,9 @@
 
     h1 {
       font-size: 2.5rem;
-      font-weight: 700;
+      font-weight: 600;
       margin-bottom: 0.75rem;
-      background: linear-gradient(135deg, var(--accent-gold), #f5d89a);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
+      color: var(--gold);
     }
 
     .subtitle {
@@ -107,11 +110,11 @@
     /* Cards */
     .card {
       background: var(--bg-secondary);
-      border: 1px solid var(--border-color);
+      border: 2px solid var(--gold);
       border-radius: 12px;
       padding: 1.5rem;
       margin-bottom: 1.5rem;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
     }
 
     .card-header {
@@ -126,7 +129,7 @@
     .card-header h2 {
       font-size: 1.2rem;
       font-weight: 600;
-      color: var(--text-primary);
+      color: var(--deep-blue);
     }
 
     .card-icon {
@@ -135,7 +138,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      background: linear-gradient(135deg, var(--accent-gold), var(--accent-emerald));
+      background: var(--gold);
       border-radius: 6px;
       font-size: 0.9rem;
     }
@@ -174,8 +177,8 @@
       align-items: center;
       gap: 0.5rem;
       padding: 0.6rem 1rem;
-      background: linear-gradient(135deg, var(--accent-emerald), #059669);
-      color: white;
+      background: var(--deep-blue);
+      color: var(--white);
       border: none;
       border-radius: 6px;
       font-family: inherit;
@@ -189,15 +192,19 @@
 
     .download-btn:hover {
       transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+      box-shadow: 0 4px 12px rgba(0, 51, 102, 0.3);
+      background: var(--burgundy);
     }
 
     .download-btn.html-btn {
-      background: linear-gradient(135deg, var(--accent-blue), #2563eb);
+      background: var(--gold);
+      color: var(--black);
     }
 
     .download-btn.html-btn:hover {
-      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+      box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
+      background: var(--burgundy);
+      color: var(--white);
     }
 
     /* Chat Section */
@@ -225,30 +232,31 @@
     }
 
     .message.user {
-      background: var(--accent-blue);
-      color: white;
+      background: var(--deep-blue);
+      color: var(--white);
       margin-left: auto;
     }
 
     .message.assistant {
-      background: var(--bg-tertiary);
+      background: var(--white);
       color: var(--text-primary);
       border: 1px solid var(--border-color);
     }
 
     .message.error {
-      background: rgba(239, 68, 68, 0.15);
-      border: 1px solid var(--accent-red);
-      color: var(--accent-red);
+      background: var(--pale-blue);
+      border: 1px solid var(--burgundy);
+      color: var(--burgundy);
     }
 
     .message.system {
-      background: rgba(212, 168, 83, 0.1);
-      border: 1px solid var(--accent-gold);
-      color: var(--accent-gold);
+      background: var(--pale-blue);
+      border: 1px solid var(--gold);
+      color: var(--deep-blue);
       text-align: center;
       max-width: 100%;
       font-size: 0.9rem;
+      font-weight: 600;
     }
 
     .chat-input-row {
@@ -279,8 +287,8 @@
 
     .chat-send {
       padding: 0.875rem 1.5rem;
-      background: linear-gradient(135deg, var(--accent-gold), #c49a3a);
-      color: var(--bg-primary);
+      background: var(--gold);
+      color: var(--black);
       border: none;
       border-radius: 8px;
       font-family: inherit;
@@ -292,7 +300,9 @@
 
     .chat-send:hover:not(:disabled) {
       transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(212, 168, 83, 0.3);
+      box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
+      background: var(--burgundy);
+      color: var(--white);
     }
 
     .chat-send:disabled {
@@ -330,9 +340,9 @@
     }
 
     .query-chip:hover {
-      background: var(--accent-gold);
-      color: var(--bg-primary);
-      border-color: var(--accent-gold);
+      background: var(--gold);
+      color: var(--black);
+      border-color: var(--gold);
     }
 
     /* README Section */
@@ -348,14 +358,15 @@
     }
 
     .readme-content h1, .readme-content h2, .readme-content h3 {
-      color: var(--accent-gold);
+      color: var(--gold);
       margin-top: 1.5rem;
       margin-bottom: 0.75rem;
+      font-weight: 600;
     }
 
     .readme-content h1 { font-size: 1.5rem; }
     .readme-content h2 { font-size: 1.25rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; }
-    .readme-content h3 { font-size: 1.1rem; color: var(--accent-emerald); }
+    .readme-content h3 { font-size: 1.1rem; color: var(--deep-blue); }
 
     .readme-content p { margin-bottom: 1rem; color: var(--text-secondary); }
     .readme-content strong { color: var(--text-primary); }
@@ -374,18 +385,19 @@
     }
 
     .readme-content th {
-      background: var(--bg-tertiary);
-      color: var(--accent-gold);
+      background: var(--pale-blue);
+      color: var(--deep-blue);
       font-weight: 600;
     }
 
     .readme-content code {
-      font-family: 'JetBrains Mono', monospace;
-      background: var(--bg-tertiary);
+      font-family: 'Inter', 'Tahoma', monospace;
+      background: var(--pale-blue);
       padding: 0.2rem 0.4rem;
       border-radius: 4px;
       font-size: 0.85em;
-      color: var(--accent-emerald);
+      color: var(--deep-blue);
+      font-weight: 600;
     }
 
     .readme-content pre {
@@ -411,7 +423,7 @@
     .readme-content li { margin-bottom: 0.5rem; }
 
     .readme-content blockquote {
-      border-left: 3px solid var(--accent-gold);
+      border-left: 3px solid var(--gold);
       padding-left: 1rem;
       margin: 1rem 0;
       color: var(--text-secondary);
@@ -436,11 +448,11 @@
 
     .stat-value {
       font-size: 1.5rem;
-      font-weight: 700;
-      color: var(--accent-gold);
+      font-weight: 600;
+      color: var(--gold);
     }
 
-    .stat-value.green { color: var(--accent-emerald); }
+    .stat-value.green { color: var(--deep-blue); }
 
     .stat-label {
       font-size: 0.8rem;
@@ -496,31 +508,106 @@
       <h1>EM Dividend Aristocrats Strategy</h1>
       <p class="subtitle">
         Quantitative research comparing Equal-Weight Buy & Hold vs Momentum strategies 
-        across 124 emerging market dividend aristocrats.
+        across 76 carefully screened dividend aristocrats from 7 key emerging market countries 
+        (China, Hong Kong, Taiwan, Brazil, Saudi Arabia, UAE, Qatar).
       </p>
     </header>
 
-    <!-- Key Stats -->
-    <div class="stats-row">
-      <div class="stat-box">
-        <div class="stat-value green" id="divYield">-</div>
-        <div class="stat-label">CY Dividend Yield</div>
-      </div>
-      <div class="stat-box">
-        <div class="stat-value">124</div>
-        <div class="stat-label">Dividend Aristocrats</div>
-      </div>
-      <div class="stat-box">
-        <div class="stat-value green" id="ewAnnReturn" style="font-size: 1.2em; line-height: 1.3;">
-          <span>20.4%</span> vs <span style="font-size: 0.8em; opacity: 0.8;">7.1%</span>
+    <!-- Key Stats - Equal-Weight Portfolio -->
+    <div style="margin-bottom: 1.5rem;">
+      <h3 style="font-size: 1rem; font-weight: 600; color: var(--deep-blue); margin-bottom: 0.75rem; text-align: center;">
+        📊 Equal-Weight (EW) Portfolio Statistics
+      </h3>
+      <div class="stats-row">
+        <div class="stat-box">
+          <div class="stat-value green" id="divYield">&gt;5% net</div>
+          <div class="stat-label">CY Dividend Yield</div>
         </div>
-        <div class="stat-label">Ann. Return vs EEM</div>
-      </div>
-      <div class="stat-box">
-        <div class="stat-value green" id="sharpeRatio" style="font-size: 1.2em; line-height: 1.3;">
-          <span>0.97</span> vs <span style="font-size: 0.8em; opacity: 0.8;">0.11</span>
+        <div class="stat-box">
+          <div class="stat-value">76</div>
+          <div class="stat-label">Dividend Aristocrats</div>
         </div>
-        <div class="stat-label">Sharpe Ratio</div>
+        <div class="stat-box">
+          <div class="stat-value green" id="ewAnnReturn" style="font-size: 1.2em; line-height: 1.3;">
+            <span>20.7%</span> vs <span style="font-size: 0.8em; opacity: 0.8;">7.1%</span>
+          </div>
+          <div class="stat-label">Ann. Return vs EEM</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-value green" id="sharpeRatio" style="font-size: 1.2em; line-height: 1.3;">
+            <span>0.95</span> vs <span style="font-size: 0.8em; opacity: 0.8;">0.11</span>
+          </div>
+          <div class="stat-label">Sharpe Ratio</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Strategy Comparison Callout -->
+    <div class="card" style="background: linear-gradient(135deg, var(--pale-blue) 0%, var(--white) 100%); border: 3px solid var(--gold); margin-bottom: 2rem; box-shadow: 0 6px 25px rgba(212, 175, 55, 0.2);">
+      <div style="display: flex; align-items: start; gap: 1rem;">
+        <div style="font-size: 2rem; line-height: 1;">⚡</div>
+        <div style="flex: 1;">
+          <h3 style="font-size: 1.2rem; font-weight: 600; color: var(--deep-blue); margin-bottom: 0.75rem;">
+            Strategy Performance Comparison
+          </h3>
+          <p style="font-size: 0.95rem; color: var(--text-primary); line-height: 1.6; margin-bottom: 1rem;">
+            <strong style="color: var(--deep-blue);">The Equal-Weight (EW) Portfolio is preferred</strong> as it provides a simple, transparent benchmark and performs just as well or better than the optimized momentum portfolio in testing.
+          </p>
+          
+          <!-- EW Portfolio Performance -->
+          <div style="margin-bottom: 1.5rem;">
+            <h4 style="font-size: 0.9rem; font-weight: 600; color: var(--deep-blue); margin-bottom: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">
+              📊 Equal-Weight (EW) Portfolio Performance (After Trading Costs)
+            </h4>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; padding: 1rem; background: rgba(0, 51, 102, 0.05); border-radius: 8px; border: 2px solid var(--deep-blue);">
+              <div style="text-align: center; padding: 0.75rem; background: var(--white); border-radius: 6px;">
+                <div style="font-size: 1.2rem; font-weight: 600; color: var(--deep-blue);">21.8%</div>
+                <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.25rem;">CAGR (Training)</div>
+              </div>
+              <div style="text-align: center; padding: 0.75rem; background: var(--white); border-radius: 6px;">
+                <div style="font-size: 1.2rem; font-weight: 600; color: var(--deep-blue);">51.0%</div>
+                <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.25rem;">CAGR (Test)</div>
+              </div>
+              <div style="text-align: center; padding: 0.75rem; background: var(--white); border-radius: 6px;">
+                <div style="font-size: 1.2rem; font-weight: 600; color: var(--deep-blue);">1.01</div>
+                <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.25rem;">Sharpe (Training)</div>
+              </div>
+              <div style="text-align: center; padding: 0.75rem; background: var(--white); border-radius: 6px;">
+                <div style="font-size: 1.2rem; font-weight: 600; color: var(--deep-blue);">3.72</div>
+                <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.25rem;">Sharpe (Test)</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Optimized Momentum Portfolio Performance -->
+          <div style="margin-bottom: 1rem;">
+            <h4 style="font-size: 0.9rem; font-weight: 600; color: var(--burgundy); margin-bottom: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px;">
+              🎯 Optimized Momentum Exclusion Portfolio (28w/60%) Performance (After Trading Costs)
+            </h4>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem; padding: 1rem; background: rgba(128, 0, 32, 0.05); border-radius: 8px; border: 2px solid var(--burgundy);">
+              <div style="text-align: center; padding: 0.75rem; background: var(--white); border-radius: 6px;">
+                <div style="font-size: 1.2rem; font-weight: 600; color: var(--burgundy);">20.2%</div>
+                <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.25rem;">CAGR (Training)</div>
+              </div>
+              <div style="text-align: center; padding: 0.75rem; background: var(--white); border-radius: 6px;">
+                <div style="font-size: 1.2rem; font-weight: 600; color: var(--burgundy);">42.0%</div>
+                <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.25rem;">CAGR (Test)</div>
+              </div>
+              <div style="text-align: center; padding: 0.75rem; background: var(--white); border-radius: 6px;">
+                <div style="font-size: 1.2rem; font-weight: 600; color: var(--burgundy);">0.99</div>
+                <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.25rem;">Sharpe (Training)</div>
+              </div>
+              <div style="text-align: center; padding: 0.75rem; background: var(--white); border-radius: 6px;">
+                <div style="font-size: 1.2rem; font-weight: 600; color: var(--burgundy);">2.87</div>
+                <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.25rem;">Sharpe (Test)</div>
+              </div>
+            </div>
+          </div>
+
+          <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.75rem; padding: 0.75rem; background: var(--pale-blue); border-radius: 6px; border-left: 3px solid var(--gold);">
+            <strong style="color: var(--deep-blue);">Note:</strong> The momentum strategy's backtest Sharpe of 1.40 (before costs) is eroded by trading costs (~3.3% annual drag from 12.7% weekly turnover). EW outperforms momentum in both training (+1.6% CAGR) and test (+9.0% CAGR) periods after accounting for transaction costs. See dashboards below for detailed momentum strategy analysis and full cost-adjusted performance.
+          </p>
+        </div>
       </div>
     </div>
 
@@ -531,12 +618,15 @@
         <h2>Downloads & Reports</h2>
       </div>
       <div class="downloads-grid">
-        <div class="download-item" style="grid-column: 1 / -1; background: linear-gradient(135deg, rgba(212, 168, 83, 0.15), rgba(16, 185, 129, 0.15)); border: 2px solid var(--accent-gold);">
-          <h3 style="font-size: 1.1rem; color: var(--accent-gold);">📊 Dividend Aristocrats Portfolio Report</h3>
-          <p style="font-size: 0.95rem;">Comprehensive snapshot of the Equal-Weight Dividend Aristocrats portfolio including key metrics, dividend yield distribution, country and sector breakdowns, and visualizations.</p>
-          <a href="/api/divarist/file/ew_portfolio_report" class="download-btn html-btn" target="_blank" style="background: linear-gradient(135deg, var(--accent-gold), #c49a3a); font-size: 1rem; padding: 0.75rem 1.5rem;">
+        <div class="download-item" style="grid-column: 1 / -1; background: var(--pale-blue); border: 2px solid var(--gold); position: relative;">
+          <div style="position: absolute; top: 0.5rem; right: 0.5rem; background: var(--gold); color: var(--black); padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">
+            FEATURED
+          </div>
+          <h3 style="font-size: 1.1rem; color: var(--deep-blue); font-weight: 600; margin-top: 0.5rem;">📊 Equal-Weight Dividend Aristocrats Portfolio Report</h3>
+          <p style="font-size: 0.95rem; color: var(--text-secondary);">Comprehensive snapshot of the <strong>Equal-Weight (EW) portfolio</strong> - featured for its simplicity and transparency. Includes key metrics, dividend yield distribution, country and sector breakdowns, and visualizations.</p>
+          <a href="/api/divarist/file/ew_portfolio_report" class="download-btn html-btn" target="_blank" style="font-size: 1rem; padding: 0.75rem 1.5rem;">
             <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg>
-            View Portfolio Report
+            View EW Portfolio Report
           </a>
         </div>
         <div class="download-item">
@@ -624,7 +714,8 @@
           <span class="query-chip" data-query="What are the three strategies compared?">Three strategies?</span>
           <span class="query-chip" data-query="How do you avoid look-ahead bias?">Look-ahead bias?</span>
           <span class="query-chip" data-query="What is the stock screening criteria?">Screening criteria?</span>
-          <span class="query-chip" data-query="Explain the 28w/80% momentum strategy">28w/80% strategy?</span>
+          <span class="query-chip" data-query="Explain the 28w/60% optimized momentum strategy">28w/60% strategy?</span>
+          <span class="query-chip" data-query="Why does momentum outperform EW in backtests but EW wins after costs?">Momentum vs EW?</span>
           <span class="query-chip" data-query="What are the known limitations?">Limitations?</span>
         </div>
       </div>
@@ -659,7 +750,8 @@
         if (res.ok) {
           const data = await res.json();
           if (divYieldElement) {
-            divYieldElement.textContent = data.dividend_yield + '%';
+            // Display as ">5% net" instead of just the percentage
+            divYieldElement.textContent = '>5% net';
           }
           if (ewAnnReturnElement) {
             const ewReturn = parseFloat(data.ew_ann_return);
